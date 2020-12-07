@@ -57,7 +57,6 @@ export default class ProductForm {
         fileInput.remove();
       }
     };
-
     // must be in body for IE
     fileInput.hidden = true;
     document.body.appendChild(fileInput);
@@ -153,7 +152,8 @@ export default class ProductForm {
         </div>
 
         <div class="form-buttons">
-          <button type="submit" name="save" class="button-primary-outline">
+          <button type="submit" name="save" class="button-primary-outline" data-element="submitElement"
+            data-role="${this.productId ? 'save' : 'add'}">
             ${this.productId ? 'Сохранить' : 'Добавить'} товар
           </button>
         </div>
@@ -170,7 +170,6 @@ export default class ProductForm {
 
     const [categoriesData, productResponse] = await Promise.all([categoriesPromise, productPromise]);
     const [productData] = productResponse;
-
     this.formData = productData;
     this.categories = categoriesData;
 
@@ -201,9 +200,11 @@ export default class ProductForm {
   }
 
   async save() {
+    const role = this.subElements.submitElement.dataset.role;
+    const method = role === 'save' ? 'PATCH' : 'PUT'; 
     const product = this.getFormData();
     const result = await fetchJson(`${process.env.BACKEND_URL}api/rest/products`, {
-      method: 'PATCH',
+      method,
       headers: {
         'Content-Type': 'application/json'
       },
@@ -256,7 +257,6 @@ export default class ProductForm {
 
     fields.forEach(item => {
       const element = productForm.querySelector(`#${item}`);
-
       element.value = this.formData[item] || this.defaultFormData[item];
     });
   }
@@ -315,13 +315,13 @@ export default class ProductForm {
     wrapper.innerHTML = `
       <li class="products-edit__imagelist-item sortable-list__item">
         <span>
-          <img src="icon-grab.svg" data-grab-handle alt="grab">
+          <img src="/icons/icon-grab.svg" data-grab-handle alt="grab">
           <img class="sortable-table__cell-img" alt="${escapeHtml(name)}" src="${escapeHtml(url)}">
           <span>${escapeHtml(name)}</span>
         </span>
 
         <button type="button">
-          <img src="icon-trash.svg" alt="delete" data-delete-handle>
+          <img src="/icons/icon-trash.svg" alt="delete" data-delete-handle>
         </button>
       </li>`;
 
@@ -336,12 +336,16 @@ export default class ProductForm {
   }
 
   destroy() {
-    this.remove();
-    this.element = null;
-    this.subElements = null;
+    if (this.element) {
+      this.remove();
+      this.element = null;
+      this.subElements = null;
+    }
   }
 
   remove() {
-    this.element.remove();
+    if (this.element) {
+      this.element.remove();
+    }
   }
 }

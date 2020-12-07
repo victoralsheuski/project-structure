@@ -1,36 +1,123 @@
-import ProductForm from "../../../components/product-form";
+
+import SortableTable from '../../../components/sortable-table/index.js';
+import DoubleSlider from '../../../components/double-slider/index.js';
+
+import header from './products-header.js';
 
 export default class Page {
   element;
   subElements = {};
   components = {};
+  from; 
+  to; 
+  status;
+
+  get template () {
+
+    return `
+      <div class="products-list">
+        <div class="content__top-panel">
+          <h1 class="page-title">Товары</h1>
+          <a href="/products/add" class="button-primary">Добавить товар</a>
+        </div>
+        <div class="content-box content-box_small">
+          <form class="form-inline">
+            <div class="form-group">
+              <label class="form-label">Сортировать по:</label>
+              <input type="text" data-element="filterName" class="form-control" placeholder="Название товара">
+            </div>
+            <div class="form-group" data-element="slider">
+              <label class="form-label">Цена:</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Статус:</label>
+              <select class="form-control" data-element="filterStatus">
+                <option value="" selected="">Любой</option>
+                <option value="1">Активный</option>
+                <option value="0">Неактивный</option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <div data-element="sortableTable" class="products-list__container">
+        </div>
+      </div>
+      `;
+
+  }
+
+  getSubElements ($element) {
+    const elements = $element.querySelectorAll('[data-element]');
+    return [...elements].reduce((accum, subElement) => {
+      accum[subElement.dataset.element] = subElement;
+      return accum;
+    }, {});
+  }
 
   async render() {
     const element = document.createElement('div');
-
-    element.innerHTML = `
-      <div>
-        <h1>List page</h1>
-      </div>`;
-
+    element.innerHTML = this.template;
     this.element = element.firstElementChild;
+    this.subElements = this.getSubElements(this.element);
 
-    this.initComponents();
-    await this.renderComponents();
+    await this.initComponents();
+
+    this.renderComponents();
+    this.initEventListeners();
 
     return this.element;
   }
 
   initComponents() {
-    const productId = '101-planset-lenovo-yt3-x90l-64-gb-3g-lte-cernyj';
+    const slider = new DoubleSlider({ min: 0, max: 4000 });
+    const sortableTable = new SortableTable(header, {
+      url: `api/rest/products?_embed=subcategory.category`,
+      isSortLocally: false,
+      start: 0,
+      step: 30
+    });
 
-    this.components.productFrom = new ProductForm(productId);
+    this.components = {
+      slider,
+      sortableTable
+    };
+    
   }
 
-  async renderComponents() {
-    const element = await this.components.productFrom.render();
+  renderComponents () {
+    Object.keys(this.components).forEach(component => {
+      const root = this.subElements[component];
+      const { element } = this.components[component];
+      root.append(element);
+    });
+  }
 
-    this.element.append(element);
+  initEventListeners () {
+    this.components.slider.element.addEventListener('range-select', event => {
+      const { from, to } = event.detail;
+      this.from = from;
+      this.to = to;
+      this.components.sortableTable.setSearchParam('price_gte', from);
+      this.components.sortableTable.setSearchParam('price_lte', to);
+      this.components.sortableTable.updateData();
+    });
+    this.subElements.filterStatus.addEventListener("change", event => {
+      this.status = event.target.value;
+      this.components.sortableTable.setSearchParam('status', this.status);
+      this.components.sortableTable.updateData();
+    });
+    this.subElements.filterName.addEventListener("input", event => {
+      this.components.sortableTable.setSearchParam('title_like', event.target.value);
+      this.components.sortableTable.updateData();
+    });
+    this.subElements.sortableTable.addEventListener("click", event => {
+      const row = event.target.closest('.sortable-table__row');
+      if (row && row.dataset.id) {
+        console.log('row.dataset.id',row.dataset.id);
+        window.location = '/products/'+row.dataset.id;
+      }
+    });
   }
 
   destroy() {

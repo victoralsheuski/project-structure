@@ -5,17 +5,12 @@ export default class Page {
   subElements = {};
   components = {};
 
-  getProductId() {
-    const url = window.location.href;
-    return url.substring(url.lastIndexOf('/') + 1);
-  }
-
   get template () {
     return `
       <div class="products-edit">
         <div class="content__top-panel">
           <h1 class="page-title">
-            <a href="/products" class="link">Товары</a> / Редактировать
+            <a href="/products" class="link">Товары</a> / Добавить
           </h1>
         </div>
         <div class="content-box" data-element="productForm">
@@ -36,8 +31,7 @@ export default class Page {
   }
 
   initComponents() {
-    const productId = this.getProductId();
-    this.components.productForm = new ProductForm(productId);
+    this.components.productForm = new ProductForm();
   }
 
   async renderComponents() {
