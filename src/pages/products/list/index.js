@@ -41,10 +41,19 @@ export default class Page {
         </div>
 
         <div data-element="sortableTable" class="products-list__container">
-        </div>
+        </div
+
       </div>
       `;
+  }
 
+  getEmptyContent() {
+    return `
+      <div>
+        <p>Не найдено товаров удовлетворяющих выбранному критерию</p>
+        <button type="button" data-id="clearFilter" class="button-primary-outline">Очистить фильтры</button>
+      </div>
+      `;
   }
 
   getSubElements ($element) {
@@ -86,11 +95,10 @@ export default class Page {
   }
 
   renderComponents () {
-    Object.keys(this.components).forEach(component => {
-      const root = this.subElements[component];
-      const { element } = this.components[component];
-      root.append(element);
-    });
+    const { slider, sortableTable } = this.components;
+    this.subElements.slider.append(slider.element);
+    this.subElements.sortableTable.append(sortableTable.element);
+    sortableTable.subElements.emptyPlaceholder.innerHTML = this.getEmptyContent();
   }
 
   initEventListeners () {
@@ -117,6 +125,14 @@ export default class Page {
         console.log('row.dataset.id',row.dataset.id);
         window.location = '/products/'+row.dataset.id;
       }
+    });
+    const clearFilter = this.subElements.sortableTable.querySelector('[data-id="clearFilter"]');
+    clearFilter.addEventListener("click", event => {
+      this.subElements.filterName.value = '';
+      this.subElements.filterStatus.value = '';
+      this.components.slider.reset();
+      this.components.sortableTable.clearSearchParams();
+      this.components.sortableTable.updateData();
     });
   }
 

@@ -71,6 +71,14 @@ export default class DoubleSlider {
     this.render();
   }
 
+  reset() {
+    this.selected.from = this.min;
+    this.selected.to = this.max;
+    this.subElements.from.innerHTML = this.formatValue(this.selected.from);
+    this.subElements.to.innerHTML = this.formatValue(this.selected.to);
+    this.update();
+  }
+
   get template() {
     const { from, to } = this.selected;
 

@@ -19,6 +19,10 @@ export default class SortableTable {
     }
   }
 
+  clearSearchParams() {
+    this.searchParams = {};
+  }
+
   onWindowScroll = async() => {
     const { bottom } = this.element.getBoundingClientRect();
     const { id, order } = this.sorted;
@@ -210,10 +214,7 @@ export default class SortableTable {
         ${this.getTableBody(this.data)}
 
         <div data-element="loading" class="loading-line sortable-table__loading-line"></div>
-
-        <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder">
-          No products
-        </div>
+        <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder"></div>
       </div>`;
   }
 
