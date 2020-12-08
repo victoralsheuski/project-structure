@@ -1,4 +1,5 @@
 import ProductForm from "../../../components/product-form";
+import NotificationMessage from "../../../components/notification";
 
 export default class Page {
   element;
@@ -32,6 +33,7 @@ export default class Page {
 
     this.initComponents();
     await this.renderComponents();
+    this.initEventListeners();
     return this.element;
   }
 
@@ -53,9 +55,19 @@ export default class Page {
     }, {});
   }
 
+  initEventListeners () {
+    this.components.productForm.element.addEventListener('product-updated', event => {
+      (new NotificationMessage("Товар сохранен", {
+        duration: 2000
+      })).show(); 
+    });
+  }
+
   destroy() {
     for (const component of Object.values(this.components)) {
       component.destroy();
     }
   }
+
+
 }

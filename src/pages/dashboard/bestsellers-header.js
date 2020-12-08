@@ -20,8 +20,8 @@ const header = [
   {
     id: 'subcategory',
     title: 'Категория',
-    sortable: true,
-    sortType: 'number',
+    sortable: false,
+    sortType: 'string',
     template: data => {
       return `          
         <div class="sortable-table__cell">
